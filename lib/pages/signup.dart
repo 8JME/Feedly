@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -7,13 +8,51 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-
   TextEditingController _nameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   TextEditingController _passwordConfirmController = TextEditingController();
 
   GlobalKey<ScaffoldState> _key = GlobalKey<ScaffoldState>();
+  FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+  _signup() async {
+    if (_passwordController.text.trim() !=
+        _passwordConfirmController.text.trim()) {
+      /// notifies user that passwords do not match
+      _key.currentState.showSnackBar(
+        SnackBar(
+          content: Text('Passwords do not match'),
+        ),
+      );
+      return;
+    }
+
+    try {
+      FirebaseUser _user = await _firebaseAuth.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim());
+
+      UserUpdateInfo info = UserUpdateInfo();
+      info.displayName = _nameController.text.trim();
+
+      await _user.updateProfile(info);
+
+      _key.currentState.showSnackBar(
+        SnackBar(
+          content: Text('Your account has been created successfully.'),
+        ),
+      );
+    } catch (e) {
+      String errorMessage = (e as PlatformException).message;
+      print('Console Error: $errorMessage');
+      _key.currentState.showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +287,7 @@ class _SignupPageState extends State<SignupPage> {
                         borderRadius: BorderRadius.circular(30.0),
                       ),
                       onPressed: () {
-
+                        _signup();
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -256,7 +295,7 @@ class _SignupPageState extends State<SignupPage> {
                           Expanded(
                             child: Padding(
                               padding:
-                              const EdgeInsets.symmetric(vertical: 16.0),
+                                  const EdgeInsets.symmetric(vertical: 16.0),
                               child: Text(
                                 'SIGN UP',
                                 textAlign: TextAlign.center,
@@ -290,7 +329,7 @@ class _SignupPageState extends State<SignupPage> {
                           Expanded(
                             child: Padding(
                               padding:
-                              const EdgeInsets.symmetric(vertical: 16.0),
+                                  const EdgeInsets.symmetric(vertical: 16.0),
                               child: Text(
                                 'Already have an Account?  Login here.',
                                 textAlign: TextAlign.center,
@@ -313,4 +352,3 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 }
-
