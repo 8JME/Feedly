@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_feedly/pages/feed.dart';
 import 'package:flutter_feedly/pages/signup.dart';
 
 class LoginPage extends StatefulWidget {
@@ -35,6 +36,11 @@ class _LoginPageState extends State<LoginPage> {
       _key.currentState.showSnackBar(SnackBar(
         content: Text('Login successful'),
       ));
+      
+      Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+        return FeedPage();
+      }));
+      
     } catch (e) {
       String errorMessage = (e as PlatformException).message;
       print('Console Error: $errorMessage');
@@ -55,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _key,
-      backgroundColor: Colors.deepPurple[300],
+      backgroundColor: Colors.red,
       body: Form(
         child: ListView(
           children: <Widget>[
@@ -199,7 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                                 'LOGIN',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: Colors.deepPurple[300],
+                                  color: Colors.red,
                                 ),
                               ),
                             ),

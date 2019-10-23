@@ -78,7 +78,7 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _key,
-      backgroundColor: Colors.deepPurple[300],
+      backgroundColor: Colors.red,
       body: Form(
         child: ListView(
           children: <Widget>[
@@ -325,7 +325,7 @@ class _SignupPageState extends State<SignupPage> {
                                 'SIGN UP',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: Colors.deepPurple[300],
+                                  color: Colors.red,
                                 ),
                               ),
                             ),
