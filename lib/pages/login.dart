@@ -23,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
         content: Text('Login successful'),
       ));
     } catch (ex) {
-      String errorMessage = (ex as PlatformException).toString();
+      String errorMessage = (ex as PlatformException).message;
       print('print statement: $errorMessage');
       _key.currentState.showSnackBar(
         SnackBar(
