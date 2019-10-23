@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_feedly/widgets/compose_box.dart';
 
 class FeedPage extends StatefulWidget {
   @override
@@ -9,6 +10,11 @@ class _FeedPageState extends State<FeedPage> {
 
   _getItems() {
     List<Widget> _items = [];
+
+    Widget _composeBox = GestureDetector(
+      child: ComposeBox(),
+      onTap: (){},
+    );
 
     return _items;
   }
