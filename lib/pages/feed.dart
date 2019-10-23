@@ -16,6 +16,8 @@ class _FeedPageState extends State<FeedPage> {
       onTap: (){},
     );
 
+    _items.add(_composeBox);
+
     return _items;
   }
 
