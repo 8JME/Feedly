@@ -322,7 +322,11 @@ class _SignupPageState extends State<SignupPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30.0),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+
+                        Navigator.of(context).pop();
+
+                      },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[

@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
 
         primarySwatch: Colors.deepOrange,
       ),
-      home: SignupPage(),
+      home: LoginPage(),
     );
   }
 }
