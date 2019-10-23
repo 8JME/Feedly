@@ -15,22 +15,39 @@ class _LoginPageState extends State<LoginPage> {
 
   GlobalKey<ScaffoldState> _key = GlobalKey<ScaffoldState>();
 
+  bool _loggingIn = false;
+
   _login() async {
+    setState(() {
+      _loggingIn = true;
+    });
+
+    _key.currentState.removeCurrentSnackBar();
+    _key.currentState.showSnackBar(SnackBar(
+      content: Text('Loging you in ....'),
+    ));
+
     try {
       FirebaseUser _user = await _firebaseAuth.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim());
+      _key.currentState.removeCurrentSnackBar();
       _key.currentState.showSnackBar(SnackBar(
         content: Text('Login successful'),
       ));
     } catch (e) {
       String errorMessage = (e as PlatformException).message;
       print('Console Error: $errorMessage');
+      _key.currentState.removeCurrentSnackBar();
       _key.currentState.showSnackBar(
         SnackBar(
           content: Text(errorMessage),
         ),
       );
+    } finally {
+      setState(() {
+        _loggingIn = false;
+      });
     }
   }
 
@@ -38,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _key,
-      backgroundColor: Colors.deepOrange,
+      backgroundColor: Colors.deepPurple[300],
       body: Form(
         child: ListView(
           children: <Widget>[
@@ -140,6 +157,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(
                         color: Colors.white,
                       ),
+                      obscureText: true,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "Enter your password",
@@ -161,12 +179,15 @@ class _LoginPageState extends State<LoginPage> {
                     child: FlatButton(
                       splashColor: Colors.white,
                       color: Colors.white,
+                      disabledColor: Colors.white.withOpacity(0.5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30.0),
                       ),
-                      onPressed: () {
-                        _login();
-                      },
+                      onPressed: _loggingIn == true
+                          ? null
+                          : () {
+                              _login();
+                            },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
@@ -178,7 +199,7 @@ class _LoginPageState extends State<LoginPage> {
                                 'LOGIN',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: Colors.deepOrange,
+                                  color: Colors.deepPurple[300],
                                 ),
                               ),
                             ),
@@ -201,11 +222,10 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(30.0),
                       ),
                       onPressed: () {
-
-                        Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext ctx){
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (BuildContext ctx) {
                           return SignupPage();
                         }));
-
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,

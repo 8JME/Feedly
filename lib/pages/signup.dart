@@ -16,6 +16,8 @@ class _SignupPageState extends State<SignupPage> {
   GlobalKey<ScaffoldState> _key = GlobalKey<ScaffoldState>();
   FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
+  bool _loggingIn = false;
+
   _signup() async {
     if (_passwordController.text.trim() !=
         _passwordConfirmController.text.trim()) {
@@ -28,6 +30,17 @@ class _SignupPageState extends State<SignupPage> {
       return;
     }
 
+    setState(() {
+      _loggingIn = true;
+    });
+
+    _key.currentState.removeCurrentSnackBar();
+    _key.currentState.showSnackBar(
+      SnackBar(
+        content: Text('Creating your acount ....'),
+      ),
+    );
+
     try {
       FirebaseUser _user = await _firebaseAuth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
@@ -38,6 +51,7 @@ class _SignupPageState extends State<SignupPage> {
 
       await _user.updateProfile(info);
 
+      _key.currentState.removeCurrentSnackBar();
       _key.currentState.showSnackBar(
         SnackBar(
           content: Text('Your account has been created successfully.'),
@@ -46,11 +60,17 @@ class _SignupPageState extends State<SignupPage> {
     } catch (e) {
       String errorMessage = (e as PlatformException).message;
       print('Console Error: $errorMessage');
+
+      _key.currentState.removeCurrentSnackBar();
       _key.currentState.showSnackBar(
         SnackBar(
           content: Text(errorMessage),
         ),
       );
+    } finally {
+      setState(() {
+        _loggingIn = false;
+      });
     }
   }
 
@@ -58,7 +78,7 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _key,
-      backgroundColor: Colors.deepOrange,
+      backgroundColor: Colors.deepPurple[300],
       body: Form(
         child: ListView(
           children: <Widget>[
@@ -211,6 +231,7 @@ class _SignupPageState extends State<SignupPage> {
                       style: TextStyle(
                         color: Colors.white,
                       ),
+                      obscureText: true,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "Enter your password",
@@ -262,6 +283,7 @@ class _SignupPageState extends State<SignupPage> {
                       style: TextStyle(
                         color: Colors.white,
                       ),
+                      obscureText: true,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "Re-enter your password",
@@ -283,12 +305,15 @@ class _SignupPageState extends State<SignupPage> {
                     child: FlatButton(
                       splashColor: Colors.white,
                       color: Colors.white,
+                      disabledColor: Colors.white.withOpacity(.5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30.0),
                       ),
-                      onPressed: () {
-                        _signup();
-                      },
+                      onPressed: _loggingIn == true
+                          ? null
+                          : () {
+                              _signup();
+                            },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
@@ -300,7 +325,7 @@ class _SignupPageState extends State<SignupPage> {
                                 'SIGN UP',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: Colors.deepOrange,
+                                  color: Colors.deepPurple[300],
                                 ),
                               ),
                             ),
@@ -323,9 +348,7 @@ class _SignupPageState extends State<SignupPage> {
                         borderRadius: BorderRadius.circular(30.0),
                       ),
                       onPressed: () {
-
                         Navigator.of(context).pop();
-
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
