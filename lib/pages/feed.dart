@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_feedly/pages/create.dart';
 import 'package:flutter_feedly/widgets/compose_box.dart';
 
 class FeedPage extends StatefulWidget {
@@ -7,13 +8,20 @@ class FeedPage extends StatefulWidget {
 }
 
 class _FeedPageState extends State<FeedPage> {
+  _navigateToCreatePage() {
+    Navigator.push(context, MaterialPageRoute(builder: (BuildContext ctx) {
+      return CreatePage();
+    }));
+  }
 
   _getItems() {
     List<Widget> _items = [];
 
     Widget _composeBox = GestureDetector(
       child: ComposeBox(),
-      onTap: (){},
+      onTap: () {
+        _navigateToCreatePage();
+      },
     );
 
     _items.add(_composeBox);
@@ -30,7 +38,7 @@ class _FeedPageState extends State<FeedPage> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.exit_to_app),
-            onPressed: (){},
+            onPressed: () {},
           )
         ],
       ),
@@ -39,7 +47,9 @@ class _FeedPageState extends State<FeedPage> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: (){},
+        onPressed: () {
+          _navigateToCreatePage();
+        },
       ),
     );
   }
