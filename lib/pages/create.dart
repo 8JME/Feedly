@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CreatePage extends StatefulWidget {
   @override
@@ -15,6 +18,7 @@ class _CreatePageState extends State<CreatePage> {
   FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   String user_uid, user_display_name;
+  File _image;
 
   _post() async {
     if (_postTextController.text.trim().length == 0) {
@@ -67,19 +71,39 @@ class _CreatePageState extends State<CreatePage> {
               ListTile(
                 leading: Icon(Icons.camera_alt),
                 title: Text('Camera'),
-                onTap: () {
+                onTap: () async {
                   // todo: use image_picker plugin
+                  File image = await ImagePicker.pickImage(
+                    source: ImageSource.camera,
+                    maxHeight: 480,
+                    maxWidth: 480,
+                  );
+
+                  setState(() {
+                    _image = image;
+                  });
 
                   Navigator.pop(context);
                 },
               ),
-              ListTile(leading: Icon(Icons.photo_album),
+              ListTile(
+                leading: Icon(Icons.photo_album),
                 title: Text('Photo Album'),
-                onTap: () {
+                onTap: () async {
                   // todo: use image_picker plugin
+                  File image = await ImagePicker.pickImage(
+                    source: ImageSource.gallery,
+                    maxHeight: 480,
+                    maxWidth: 480,
+                  );
+
+                  setState(() {
+                    _image = image;
+                  });
 
                   Navigator.pop(context);
-                },),
+                },
+              ),
             ],
           );
         });
