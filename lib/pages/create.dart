@@ -1,9 +1,9 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class CreatePage extends StatefulWidget {
   @override
@@ -20,6 +20,7 @@ class _CreatePageState extends State<CreatePage> {
   String user_uid, user_display_name;
   File _image;
 
+  /// Post to Firebase DB
   _post() async {
     if (_postTextController.text.trim().length == 0) {
       _key.currentState.showSnackBar(
@@ -31,8 +32,10 @@ class _CreatePageState extends State<CreatePage> {
       return;
     }
 
+    DocumentReference ref;
+
     try {
-      await _firestore.collection('posts').add({
+      ref = await _firestore.collection('posts').add({
         'text': _postTextController.text.trim(),
         'owner_name': user_display_name,
         'owner': user_uid,
@@ -42,6 +45,22 @@ class _CreatePageState extends State<CreatePage> {
         'comments_count': 0,
       });
 
+      if(_image != null) {
+        _key.currentState.removeCurrentSnackBar();
+        _key.currentState.showSnackBar(
+          SnackBar(
+            content: Text('Uploading image, please wait ....'),
+          ),
+        );
+        
+        String _url = await _uploadImageAndGetURL(ref.documentID, _image);
+
+        await ref.updateData({
+          'image' : _url,
+        });
+      }
+
+      _key.currentState.removeCurrentSnackBar();
       _key.currentState.showSnackBar(SnackBar(
         content: Text('Post created successfully.'),
       ));
@@ -107,6 +126,18 @@ class _CreatePageState extends State<CreatePage> {
             ],
           );
         });
+  }
+
+  Future<String> _uploadImageAndGetURL(String fileName, File file) async {
+    FirebaseStorage _storage = FirebaseStorage.instance;
+    StorageUploadTask _task = _storage.ref().child(fileName).putFile(
+          file,
+          StorageMetadata(contentType: 'image/png'),
+        );
+
+    final String _downloadURL = await (await _task.onComplete).ref.getDownloadURL();
+
+    return _downloadURL;
   }
 
   @override
@@ -223,37 +254,37 @@ class _CreatePageState extends State<CreatePage> {
               child: _image == null
                   ? Container()
                   : Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Stack(
-                    children: <Widget>[
-                      Container(
-                        child: Image.file(
-                          _image,
-                          fit: BoxFit.cover,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Stack(
+                          children: <Widget>[
+                            Container(
+                              child: Image.file(
+                                _image,
+                                fit: BoxFit.cover,
+                              ),
+                              width: 150,
+                              height: 150,
+                            ),
+                            Positioned(
+                              top: 4.0,
+                              right: 4.0,
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _image = null;
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                        width: 150,
-                        height: 150,
-                      ),
-                      Positioned(
-                        top: 4.0,
-                        right: 4.0,
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.close,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _image = null;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                      ],
+                    ),
             ),
           ],
         ),
