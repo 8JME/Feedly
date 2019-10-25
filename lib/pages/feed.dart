@@ -17,19 +17,32 @@ Firestore _firestore = Firestore.instance;
 FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
 class _FeedPageState extends State<FeedPage> {
-  _navigateToCreatePage() {
-    Navigator.push(context, MaterialPageRoute(builder: (BuildContext ctx) {
+  _navigateToCreatePage() async {
+    await Navigator.push(context,
+        MaterialPageRoute(builder: (BuildContext ctx) {
       return CreatePage();
     }));
+
+    /// refreshes list feed
+    _getFeedFuture = _getFeed();
   }
 
   Future _getFeed() async {
-    Query _query = _firestore.collection('posts').orderBy('created', descending: true).limit(10);
-    QuerySnapshot _quertSnapshot =  await _query.getDocuments();
+    _posts = [];
 
-    print(_quertSnapshot.documents.length);
+    Query _query = _firestore
+        .collection('posts')
+        .orderBy('created', descending: true)
+        .limit(10);
+    QuerySnapshot _quertSnapshot = await _query.getDocuments();
 
     _postDocuments = _quertSnapshot.documents;
+
+    for (var i = 0; i < _postDocuments.length; ++i) {
+      Widget w = _makeCard(_postDocuments[i]);
+
+      _posts.add(w);
+    }
 
     return _postDocuments;
   }
@@ -46,6 +59,48 @@ class _FeedPageState extends State<FeedPage> {
 
     _items.add(_composeBox);
 
+    Widget separator = Container(
+      padding: const EdgeInsets.all(10),
+      child: Text(
+        'Recent Posts',
+        style: TextStyle(
+          color: Colors.black54,
+        ),
+      ),
+    );
+
+    _items.add(separator);
+
+    Widget feed = FutureBuilder(
+      future: _getFeedFuture,
+      builder: (BuildContext ctx, AsyncSnapshot snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            snapshot.data == null) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              CircularProgressIndicator(),
+              SizedBox(
+                height: 16.0,
+              ),
+              Text('Loading ....'),
+            ],
+          );
+        } else if (snapshot.data.length == 0) {
+          return Text('No data to display');
+        } else {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: _posts,
+          );
+        }
+      },
+    );
+
+    _items.add(feed);
+
     return _items;
   }
 
@@ -53,7 +108,7 @@ class _FeedPageState extends State<FeedPage> {
   void initState() {
     super.initState();
 
-    _getFeed();
+    _getFeedFuture = _getFeed();
   }
 
   @override
@@ -77,6 +132,91 @@ class _FeedPageState extends State<FeedPage> {
         onPressed: () {
           _navigateToCreatePage();
         },
+      ),
+    );
+  }
+
+  Widget _makeCard(DocumentSnapshot postDocument) {
+    return Card(
+      margin: const EdgeInsets.all(8.0),
+      elevation: 5.0,
+      child: Column(
+        children: <Widget>[
+          ListTile(
+            title: Text(postDocument.data['owner_name']),
+            subtitle: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Icon(
+                  Icons.watch_later,
+                  size: 14.0,
+                ),
+                SizedBox(
+                  width: 4.0,
+                ),
+                Text(
+                  (postDocument.data['created'] as Timestamp)
+                      .toDate()
+                      .toIso8601String(),
+                ),
+              ],
+            ),
+          ),
+          postDocument.data['image'] == null
+              ? Container()
+              : Image.network(
+                  postDocument.data['image'],
+                  fit: BoxFit.cover,
+                  width: MediaQuery.of(context).size.width,
+                ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(postDocument.data['text']),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Expanded(
+                child: FlatButton(
+                  onPressed: () {},
+                  child: Text(
+                    '7 Likes',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: FlatButton(
+                  onPressed: () {},
+                  child: Text(
+                    '3 Comments',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: FlatButton(
+                  onPressed: () {},
+                  child: Text(
+                    'Share',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
       ),
     );
   }
