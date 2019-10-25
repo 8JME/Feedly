@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feedly/pages/create.dart';
 import 'package:flutter_feedly/widgets/compose_box.dart';
+import 'package:simple_moment/simple_moment.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class FeedPage extends StatefulWidget {
   @override
@@ -155,17 +157,18 @@ class _FeedPageState extends State<FeedPage> {
                   width: 4.0,
                 ),
                 Text(
-                  (postDocument.data['created'] as Timestamp)
-                      .toDate()
-                      .toIso8601String(),
+                  (Moment.now().from(
+                    (postDocument.data['created'] as Timestamp).toDate(),
+                  )),
                 ),
               ],
             ),
           ),
           postDocument.data['image'] == null
               ? Container()
-              : Image.network(
-                  postDocument.data['image'],
+              : FadeInImage.memoryNetwork(
+                  placeholder: kTransparentImage,
+                  image: postDocument.data['image'],
                   fit: BoxFit.cover,
                   width: MediaQuery.of(context).size.width,
                 ),
