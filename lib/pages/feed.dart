@@ -18,6 +18,12 @@ Future _getFeedFuture;
 Firestore _firestore = Firestore.instance;
 FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
+ScrollController _scrollController = ScrollController();
+bool _loadingMorePosts = false;
+bool _canLoadMorePost = true;
+
+DocumentSnapshot _lastDocument;
+
 class _FeedPageState extends State<FeedPage> {
   _navigateToCreatePage() async {
     await Navigator.push(context,
@@ -39,12 +45,57 @@ class _FeedPageState extends State<FeedPage> {
     QuerySnapshot _quertSnapshot = await _query.getDocuments();
 
     _postDocuments = _quertSnapshot.documents;
+    _lastDocument = _postDocuments[_postDocuments.length - 1];
 
     for (var i = 0; i < _postDocuments.length; ++i) {
       Widget w = _makeCard(_postDocuments[i]);
 
       _posts.add(w);
     }
+
+    return _postDocuments;
+  }
+
+  Future _getMoreFeed() async {
+
+    if(_loadingMorePosts == true) {
+      print('Already loading more posts ...');
+      return null;
+    }
+
+    if(_canLoadMorePost == false) {
+      print('No more data to be loaded ...');
+      return null;
+    }
+
+    _loadingMorePosts = true;
+
+    Query _query = _firestore
+        .collection('posts')
+        .orderBy('created', descending: true)
+        .limit(10)
+        .startAfter([_lastDocument.data['created']]);
+    QuerySnapshot _quertSnapshot = await _query.getDocuments();
+
+    print(_quertSnapshot.documents.length);
+
+    if(_quertSnapshot.documents.length < 10){
+      print('loaded all posts!');
+      _canLoadMorePost = false;
+    }
+
+    _postDocuments = _quertSnapshot.documents;
+    _lastDocument = _postDocuments[_postDocuments.length - 1];
+
+    for (var i = 0; i < _postDocuments.length; ++i) {
+      Widget w = _makeCard(_postDocuments[i]);
+
+      _posts.add(w);
+    }
+
+    setState(() {
+      _loadingMorePosts = false;
+    });
 
     return _postDocuments;
   }
@@ -110,6 +161,16 @@ class _FeedPageState extends State<FeedPage> {
   void initState() {
     super.initState();
 
+    _scrollController.addListener((){
+      double maxScroll = _scrollController.position.maxScrollExtent;
+      double currentScroll = _scrollController.position.pixels;
+      double delta = MediaQuery.of(context).size.height * 0.25;
+
+      if(maxScroll - currentScroll < delta) {
+        _getMoreFeed();
+      }
+    });
+
     _getFeedFuture = _getFeed();
   }
 
@@ -127,6 +188,7 @@ class _FeedPageState extends State<FeedPage> {
         ],
       ),
       body: ListView(
+        controller: _scrollController,
         children: _getItems(),
       ),
       floatingActionButton: FloatingActionButton(
